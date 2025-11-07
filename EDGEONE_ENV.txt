@@ -1,0 +1,76 @@
+📋 EdgeOne Pages 环境变量配置
+=====================================
+
+复制以下 4 个环境变量到 EdgeOne Pages 控制台
+
+⚠️ 注意：请先在 Supabase 复制完整的数据库连接字符串（包含密码）
+
+
+1️⃣ DATABASE_URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+变量名: DATABASE_URL
+
+变量值（从 Supabase 复制 "Connection pooling"）:
+postgresql://postgres.hnoadhraxrbcwqdpvzux:[YOUR_PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+
+📍 获取方式：
+访问 https://supabase.com/dashboard/project/hnoadhraxrbcwqdpvzux/settings/database
+找到 "Connection string" → 点击 "Connection pooling" 旁的【复制】按钮
+
+
+2️⃣ DIRECT_URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+变量名: DIRECT_URL
+
+变量值（从 Supabase 复制 "Direct connection"）:
+postgresql://postgres.hnoadhraxrbcwqdpvzux:[YOUR_PASSWORD]@aws-0-ap-southeast-1.pooler.supabase.com:5432/postgres
+
+📍 获取方式：
+同上页面 → 点击 "Direct connection" 旁的【复制】按钮
+
+
+3️⃣ JWT_SECRET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+变量名: JWT_SECRET
+
+变量值（直接复制）:
+TyPtVTYmmwSrozO4SJ7+uAOEaaV3CpPo/+hBn5MjXOU=
+
+
+4️⃣ NEXT_PUBLIC_APP_URL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+变量名: NEXT_PUBLIC_APP_URL
+
+变量值（直接复制）:
+https://health-calculator.edgeone.app
+
+
+✅ 配置完成后
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. 点击保存
+2. 触发重新部署（自动或手动）
+3. 等待 2-3 分钟
+4. 访问：https://health-calculator.edgeone.app/api/health
+5. 应该返回：{"status": "healthy"}
+
+
+🔗 快速链接
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Supabase 数据库设置：
+  https://supabase.com/dashboard/project/hnoadhraxrbcwqdpvzux/settings/database
+
+• EdgeOne Pages 控制台：
+  （您的 EdgeOne Pages 项目链接）
+
+• 健康检查接口：
+  https://health-calculator.edgeone.app/api/health
+
+
+📌 项目信息
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+项目名称：jiankang（健康计算器）
+项目 ID：hnoadhraxrbcwqdpvzux
+区域：新加坡 (ap-southeast-1)
+数据库状态：✅ ACTIVE_HEALTHY
+管理员：goushuai（已升级为 ADMIN）
+
