@@ -4,6 +4,15 @@ import { prisma } from '@/lib/db'
 import { calorieSchema } from '@/lib/validators'
 import { calculateCalorieNeeds } from '@/lib/calculators'
 
+// 活动水平映射
+const activityLevelMap: Record<string, number> = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  veryActive: 1.9,
+}
+
 export async function POST(request: NextRequest) {
   try {
     const session = await getSession()
@@ -11,12 +20,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = calorieSchema.parse(body)
     
+    const activityLevelValue = activityLevelMap[validatedData.activityLevel]
+    
     const { maintenance, deficit, surplus } = calculateCalorieNeeds(
       validatedData.gender,
       validatedData.age,
       validatedData.height,
       validatedData.weight,
-      validatedData.activityLevel
+      activityLevelValue
     )
     
     let recordId = null
