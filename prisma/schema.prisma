@@ -1,0 +1,215 @@
+// Prisma Schema for 健康计算器
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户角色枚举
+enum UserRole {
+  ADMIN      // 管理员
+  USER       // 普通用户
+}
+
+// 用户表 (自定义认证)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // bcrypt 加密
+  username  String   @unique
+  avatar    String?
+  role      UserRole @default(USER)  // 用户角色，默认为普通用户
+  isActive  Boolean  @default(true)   // 账户是否激活
+  lastLoginAt DateTime?              // 最后登录时间
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 用户个人信息
+  profile   UserProfile?
+  
+  // 计算历史记录
+  bmiRecords          BMIRecord[]
+  bmrRecords          BMRRecord[]
+  bodyFatRecords      BodyFatRecord[]
+  waistHipRecords     WaistHipRecord[]
+  bloodPressureRecords BloodPressureRecord[]
+  targetHeartRateRecords TargetHeartRateRecord[]
+  sliRecords          SLIRecord[]
+  calorieRecords      CalorieRecord[]
+
+  @@map("users")
+  @@index([role])
+  @@index([isActive])
+}
+
+// 用户个人资料
+model UserProfile {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String?  // male, female
+  birthDate DateTime?
+  height    Float?   // cm
+  weight    Float?   // kg
+  
+  updatedAt DateTime @updatedAt
+
+  @@map("user_profiles")
+}
+
+// BMI 计算记录
+model BMIRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String
+  height    Float    // cm
+  weight    Float    // kg
+  bmi       Float
+  advice    String
+  
+  createdAt DateTime @default(now())
+
+  @@map("bmi_records")
+  @@index([userId, createdAt])
+}
+
+// BMR 基础代谢率记录
+model BMRRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String
+  age       Int
+  height    Float    // cm
+  weight    Float    // kg
+  activityLevel Float
+  bmr       Float
+  calorieNeeds Float
+  
+  createdAt DateTime @default(now())
+
+  @@map("bmr_records")
+  @@index([userId, createdAt])
+}
+
+// 体脂率记录
+model BodyFatRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String
+  age       Int
+  height    Float    // cm
+  weight    Float    // kg
+  waist     Float    // cm
+  hip       Float    // cm
+  bodyFatPercentage Float
+  advice    String
+  
+  createdAt DateTime @default(now())
+
+  @@map("body_fat_records")
+  @@index([userId, createdAt])
+}
+
+// 腰臀比记录
+model WaistHipRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String
+  waist     Float    // cm
+  hip       Float    // cm
+  ratio     Float
+  advice    String
+  
+  createdAt DateTime @default(now())
+
+  @@map("waist_hip_records")
+  @@index([userId, createdAt])
+}
+
+// 血压记录
+model BloodPressureRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  systolic  Int      // 收缩压
+  diastolic Int      // 舒张压
+  advice    String
+  
+  createdAt DateTime @default(now())
+
+  @@map("blood_pressure_records")
+  @@index([userId, createdAt])
+}
+
+// 目标心率记录
+model TargetHeartRateRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  age       Int
+  maxHeartRate Int
+  warmUpRange String
+  fatBurnRange String
+  cardioRange String
+  
+  createdAt DateTime @default(now())
+
+  @@map("target_heart_rate_records")
+  @@index([userId, createdAt])
+}
+
+// 心脏负荷指数记录
+model SLIRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  age       Int
+  exerciseHeartRate Int
+  restingHeartRate Int
+  duration  Int      // minutes
+  sli       Float
+  advice    String
+  
+  createdAt DateTime @default(now())
+
+  @@map("sli_records")
+  @@index([userId, createdAt])
+}
+
+// 卡路里需求记录
+model CalorieRecord {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  gender    String
+  age       Int
+  height    Float
+  weight    Float
+  activityLevel Float
+  maintenance Int
+  deficit   Int
+  surplus   Int
+  
+  createdAt DateTime @default(now())
+
+  @@map("calorie_records")
+  @@index([userId, createdAt])
+}
+
