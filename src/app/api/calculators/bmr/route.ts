@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
           age: validatedData.age,
           height: validatedData.height,
           weight: validatedData.weight,
-          activityLevel: validatedData.activityLevel,
+          activityLevel: activityLevelValue,
           bmr,
           calorieNeeds,
         },
