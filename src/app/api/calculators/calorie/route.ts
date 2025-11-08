@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { calorieSchema } from '@/lib/validators'
@@ -46,6 +47,9 @@ export async function POST(request: NextRequest) {
         },
       })
       recordId = record.id
+      
+      // 刷新历史记录页面缓存
+      revalidatePath('/history')
     }
     
     return NextResponse.json({
