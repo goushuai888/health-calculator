@@ -194,12 +194,14 @@ export default async function HomePage() {
                   <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-primary-600 transition-colors">
                     {calc.name}
                   </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed mb-4">{calc.description}</p>
-                  <div className="flex items-center text-primary-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                    立即使用
-                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">{calc.description}</p>
+                  <div className="flex items-center justify-center mt-auto pt-3 border-t border-gray-100">
+                    <span className="text-primary-600 text-sm font-semibold flex items-center group-hover:text-primary-700 transition-colors">
+                      立即使用
+                      <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </span>
                   </div>
                 </Card>
               </Link>
