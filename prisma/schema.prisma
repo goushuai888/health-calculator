@@ -1,4 +1,5 @@
 // Prisma Schema for 健康计算器
+// 优化版本 - 针对 Neon PostgreSQL
 
 generator client {
   provider      = "prisma-client-js"
@@ -8,7 +9,6 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")  // 暂时注释，EdgeOne Pages 可能不支持
 }
 
 // 用户角色枚举
@@ -19,33 +19,35 @@ enum UserRole {
 
 // 用户表 (自定义认证)
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String   // bcrypt 加密
-  username  String   @unique
-  avatar    String?
-  role      UserRole @default(USER)  // 用户角色，默认为普通用户
-  isActive  Boolean  @default(true)   // 账户是否激活
-  lastLoginAt DateTime?              // 最后登录时间
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(uuid())
+  email       String    @unique
+  password    String    // bcrypt 加密
+  username    String    @unique
+  avatar      String?
+  role        UserRole  @default(USER)   // 用户角色，默认为普通用户
+  isActive    Boolean   @default(true)   // 账户是否激活
+  lastLoginAt DateTime?                  // 最后登录时间
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   // 用户个人信息
-  profile   UserProfile?
+  profile UserProfile?
   
   // 计算历史记录
-  bmiRecords          BMIRecord[]
-  bmrRecords          BMRRecord[]
-  bodyFatRecords      BodyFatRecord[]
-  waistHipRecords     WaistHipRecord[]
-  bloodPressureRecords BloodPressureRecord[]
+  bmiRecords             BMIRecord[]
+  bmrRecords             BMRRecord[]
+  bodyFatRecords         BodyFatRecord[]
+  waistHipRecords        WaistHipRecord[]
+  bloodPressureRecords   BloodPressureRecord[]
   targetHeartRateRecords TargetHeartRateRecord[]
-  sliRecords          SLIRecord[]
-  calorieRecords      CalorieRecord[]
+  sliRecords             SLIRecord[]
+  calorieRecords         CalorieRecord[]
 
   @@map("users")
-  @@index([role])
-  @@index([isActive])
+  @@index([role, isActive])           // 复合索引：管理员查询活跃用户
+  @@index([isActive, createdAt])      // 复合索引：按注册时间查询活跃用户
+  @@index([lastLoginAt])              // 索引：查询最近登录
+  @@index([createdAt])                // 索引：按注册时间排序
 }
 
 // 用户个人资料
@@ -74,53 +76,56 @@ model BMIRecord {
   height    Float    // cm
   weight    Float    // kg
   bmi       Float
-  advice    String
+  advice    String   @db.Text  // 优化：使用 TEXT 类型存储长文本
   
   createdAt DateTime @default(now())
 
   @@map("bmi_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])  // 优化：降序索引，最新记录优先
+  @@index([createdAt(sort: Desc)])          // 索引：全局最新记录查询
 }
 
 // BMR 基础代谢率记录
 model BMRRecord {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  gender    String
-  age       Int
-  height    Float    // cm
-  weight    Float    // kg
+  gender        String
+  age           Int
+  height        Float    // cm
+  weight        Float    // kg
   activityLevel Float
-  bmr       Float
-  calorieNeeds Float
+  bmr           Float
+  calorieNeeds  Float
   
-  createdAt DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   @@map("bmr_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 体脂率记录
 model BodyFatRecord {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  gender    String
-  age       Int
-  height    Float    // cm
-  weight    Float    // kg
-  waist     Float    // cm
-  hip       Float    // cm
+  gender            String
+  age               Int
+  height            Float    // cm
+  weight            Float    // kg
+  waist             Float    // cm
+  hip               Float    // cm
   bodyFatPercentage Float
-  advice    String
+  advice            String   @db.Text
   
-  createdAt DateTime @default(now())
+  createdAt         DateTime @default(now())
 
   @@map("body_fat_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 腰臀比记录
@@ -133,12 +138,13 @@ model WaistHipRecord {
   waist     Float    // cm
   hip       Float    // cm
   ratio     Float
-  advice    String
+  advice    String   @db.Text
   
   createdAt DateTime @default(now())
 
   @@map("waist_hip_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 血压记录
@@ -149,69 +155,73 @@ model BloodPressureRecord {
   
   systolic  Int      // 收缩压
   diastolic Int      // 舒张压
-  advice    String
+  advice    String   @db.Text
   
   createdAt DateTime @default(now())
 
   @@map("blood_pressure_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 目标心率记录
 model TargetHeartRateRecord {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  age       Int
+  age          Int
   maxHeartRate Int
-  warmUpRange String
-  fatBurnRange String
-  cardioRange String
+  warmUpRange  String   @db.VarChar(50)
+  fatBurnRange String   @db.VarChar(50)
+  cardioRange  String   @db.VarChar(50)
   
-  createdAt DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   @@map("target_heart_rate_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 心脏负荷指数记录
 model SLIRecord {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String   @id @default(uuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  age       Int
+  age               Int
   exerciseHeartRate Int
-  restingHeartRate Int
-  duration  Int      // minutes
-  sli       Float
-  advice    String
+  restingHeartRate  Int
+  duration          Int      // minutes
+  sli               Float
+  advice            String   @db.Text
   
-  createdAt DateTime @default(now())
+  createdAt         DateTime @default(now())
 
   @@map("sli_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
 // 卡路里需求记录
 model CalorieRecord {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
-  gender    String
-  age       Int
-  height    Float
-  weight    Float
+  gender        String
+  age           Int
+  height        Float
+  weight        Float
   activityLevel Float
-  maintenance Int
-  deficit   Int
-  surplus   Int
+  maintenance   Int
+  deficit       Int
+  surplus       Int
   
-  createdAt DateTime @default(now())
+  createdAt     DateTime @default(now())
 
   @@map("calorie_records")
-  @@index([userId, createdAt])
+  @@index([userId, createdAt(sort: Desc)])
+  @@index([createdAt(sort: Desc)])
 }
 
