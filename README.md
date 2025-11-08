@@ -135,55 +135,61 @@ pnpm dev
 ```
 jiankang/
 ├── prisma/
-│   └── schema.prisma          # Prisma 数据库模型
+│   └── schema.prisma              # 数据库模型定义
 ├── src/
-│   ├── app/                   # Next.js App Router
-│   │   ├── api/              # API 路由
-│   │   │   ├── auth/         # 认证 API
-│   │   │   ├── calculators/  # 计算器 API
-│   │   │   └── admin/        # 管理员 API
-│   │   ├── calculators/      # 计算器页面
-│   │   ├── admin/            # 管理员面板
-│   │   ├── dashboard/        # 用户仪表板
-│   │   ├── history/          # 历史记录
-│   │   ├── login/            # 登录页
-│   │   ├── register/         # 注册页
-│   │   └── page.tsx          # 首页
-│   ├── components/           # React 组件
-│   │   ├── ui/              # UI 组件库
-│   │   ├── Header.tsx       # 导航栏
-│   │   ├── CalculatorSidebar.tsx  # 侧边栏
-│   │   └── CalculatorLayout.tsx   # 布局组件
-│   ├── contexts/            # React Context
-│   │   └── UserContext.tsx # 全局用户状态
-│   └── lib/                # 工具库
-│       ├── auth.ts         # 认证逻辑
-│       ├── calculators.ts  # 计算器核心逻辑
-│       ├── db.ts           # Prisma Client
-│       ├── password.ts     # 密码处理
-│       └── validators.ts   # 数据验证
-├── docs/                   # 文档
-│   └── archive/           # 归档文档
-├── package.json
-├── tsconfig.json
-├── tailwind.config.js
-└── next.config.js
+│   ├── app/                       # Next.js App Router
+│   │   ├── api/                  # 后端 API 路由
+│   │   │   ├── auth/             # 用户认证（注册/登录/登出）
+│   │   │   ├── admin/            # 管理员功能（用户管理/统计）
+│   │   │   └── calculators/      # 8个健康计算器 API
+│   │   ├── calculators/          # 计算器前端页面
+│   │   ├── admin/                # 管理员控制面板
+│   │   ├── dashboard/            # 用户仪表板
+│   │   ├── history/              # 计算历史记录
+│   │   ├── login/                # 登录页面
+│   │   ├── register/             # 注册页面
+│   │   ├── layout.tsx            # 根布局
+│   │   └── page.tsx              # 首页
+│   ├── components/               # React 组件
+│   │   ├── ui/                   # 基础 UI 组件（Button/Card/Input）
+│   │   ├── Header.tsx            # 顶部导航栏
+│   │   ├── CalculatorSidebar.tsx # 计算器侧边栏
+│   │   └── CalculatorLayout.tsx  # 计算器页面布局
+│   ├── contexts/                 # React Context
+│   │   └── UserContext.tsx       # 全局用户状态管理
+│   ├── lib/                      # 核心工具库
+│   │   ├── auth.ts               # JWT 认证逻辑
+│   │   ├── db.ts                 # Prisma Client 实例
+│   │   ├── password.ts           # 密码加密处理
+│   │   └── validators.ts         # Zod 数据验证
+│   └── utils/                    # 业务工具函数
+│       └── calculators.ts        # 8个计算器核心算法
+├── .env                          # 环境变量（不提交）
+├── .gitignore                    # Git 忽略配置
+├── package.json                  # 项目依赖
+├── tsconfig.json                 # TypeScript 配置
+├── tailwind.config.js            # Tailwind CSS 配置
+├── next.config.js                # Next.js 配置
+└── README.md                     # 项目文档
 ```
 
 ## 🗄️ 数据库模型
 
-主要数据表：
+### 用户相关
+- **users** - 用户账户（用户名、邮箱、密码哈希、角色、状态）
+- **user_profiles** - 用户个人资料（性别、生日、身高、体重）
 
-- `users` - 用户信息（用户名、邮箱、密码、角色）
-- `user_profiles` - 用户个人资料
-- `bmi_records` - BMI 计算记录
-- `bmr_records` - BMR 计算记录
-- `body_fat_records` - 体脂率记录
-- `waist_hip_records` - 腰臀比记录
-- `blood_pressure_records` - 血压记录
-- `target_heart_rate_records` - 目标心率记录
-- `sli_records` - 运动负荷指数记录
-- `calorie_records` - 热量需求记录
+### 健康记录（8类）
+- **bmi_records** - BMI（身体质量指数）计算记录
+- **bmr_records** - BMR（基础代谢率）计算记录
+- **body_fat_records** - 体脂率估算记录
+- **waist_hip_records** - 腰臀比评估记录
+- **blood_pressure_records** - 血压评估记录
+- **target_heart_rate_records** - 目标心率区间记录
+- **sli_records** - 运动负荷指数记录
+- **calorie_records** - 每日热量需求记录
+
+> 每条记录自动关联用户ID、创建时间，支持统一时间线展示
 
 ## 🔐 认证系统
 
@@ -250,29 +256,56 @@ UPDATE users SET role = 'ADMIN' WHERE username = 'your-username';
 - **登录模式**：自动保存历史记录，返回 `recordId`
 
 ### 管理员 API
-- `GET /api/admin/users` - 获取用户列表
-- `PUT /api/admin/users/:id` - 更新用户信息
+- `GET /api/admin/stats` - 系统统计数据
+- `GET /api/admin/users` - 获取用户列表（分页/筛选）
+- `GET /api/admin/users/:id` - 获取单个用户详情
+- `PATCH /api/admin/users/:id` - 更新用户信息（角色/状态）
 - `DELETE /api/admin/users/:id` - 删除用户
+- `POST /api/admin/users/:id/reset-password` - 重置用户密码
 
 ## 📚 开发指南
 
 ### 添加新的计算器
 
-1. 在 `prisma/schema.prisma` 添加新的数据模型
-2. 运行 `npx prisma db push` 更新数据库
-3. 在 `src/lib/calculators.ts` 添加计算逻辑
-4. 在 `src/lib/validators.ts` 添加验证规则
-5. 创建 API 路由 `src/app/api/calculators/[name]/route.ts`
-6. 创建前端页面 `src/app/calculators/[name]/page.tsx`
-7. 在侧边栏添加导航链接
+1. **定义数据模型**
+   - 在 `prisma/schema.prisma` 添加新的 Record 模型
+   - 运行 `npx prisma db push` 同步到数据库
 
-### 代码规范
+2. **实现计算逻辑**
+   - 在 `src/utils/calculators.ts` 添加计算函数
+   - 在 `src/lib/validators.ts` 添加 Zod 验证 schema
 
-- 使用 TypeScript 严格模式
-- 使用 Prisma 进行数据库操作
-- 使用 Zod 进行数据验证
-- 使用 Tailwind CSS 编写样式
-- 遵循 Next.js 14 App Router 最佳实践
+3. **创建后端 API**
+   - 创建 `src/app/api/calculators/[name]/route.ts`
+   - 支持访客模式（无需登录）和登录模式（保存历史）
+
+4. **创建前端页面**
+   - 创建 `src/app/calculators/[name]/page.tsx`
+   - 使用 `CalculatorLayout` 布局组件
+   - 实现表单和结果展示
+
+5. **添加导航**
+   - 在 `src/components/CalculatorSidebar.tsx` 添加链接
+   - 在首页 `src/app/page.tsx` 添加卡片
+
+### 技术规范
+
+| 规范 | 要求 |
+|------|------|
+| **类型检查** | TypeScript 严格模式，无 `any` 类型 |
+| **数据库** | 使用 Prisma ORM，禁止原生 SQL |
+| **验证** | 使用 Zod 进行输入验证 |
+| **样式** | Tailwind CSS + 响应式设计 |
+| **路由** | Next.js 14 App Router |
+| **安全** | JWT 认证 + RBAC 权限控制 |
+
+### 关键设计原则
+
+1. **访客优先** - 所有计算器无需登录即可使用
+2. **类型安全** - 全栈 TypeScript + Prisma 类型
+3. **性能优化** - 边缘函数 + 连接池 + 静态生成
+4. **安全第一** - 密码加密 + JWT + HTTPS
+5. **用户体验** - 响应式 + 加载状态 + 错误处理
 
 ## 🐛 常见问题
 
@@ -305,27 +338,80 @@ node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
 
 ## 🌟 项目特色
 
-- ✅ **完全免费使用**（访客模式）
-- ✅ **现代化 UI 设计**（Tailwind CSS）
-- ✅ **响应式布局**（支持手机、平板、桌面）
-- ✅ **快速性能**（Next.js 14 + Edge Runtime）
-- ✅ **类型安全**（TypeScript + Prisma）
-- ✅ **数据隐私**（自托管，数据安全）
-- ✅ **易于扩展**（模块化架构）
+### 核心优势
+- ✅ **访客模式** - 无需注册，立即使用所有计算器
+- ✅ **历史追踪** - 登录后自动保存，统一时间线展示
+- ✅ **管理后台** - 完整的用户管理和系统统计
+- ✅ **现代架构** - Next.js 14 App Router + Edge Runtime
+- ✅ **类型安全** - 全栈 TypeScript + Prisma ORM
+- ✅ **响应式设计** - 完美支持手机/平板/桌面
+- ✅ **安全可靠** - bcrypt + JWT + SSL
+- ✅ **易于部署** - 支持 Vercel / EdgeOne Pages
+- ✅ **数据隐私** - 自托管，数据完全掌控
+- ✅ **模块化** - 清晰的代码结构，易于维护扩展
+
+### 技术亮点
+| 特性 | 技术方案 |
+|------|---------|
+| **前端** | React 18 + TypeScript + Tailwind CSS |
+| **后端** | Next.js 14 API Routes |
+| **数据库** | Neon PostgreSQL（无服务器） |
+| **ORM** | Prisma（类型安全） |
+| **认证** | JWT + HttpOnly Cookie |
+| **部署** | Edge Functions + CDN |
+
+## 📊 项目统计
+
+| 指标 | 数值 |
+|------|------|
+| **计算器数量** | 8 个 |
+| **API 端点** | 19 个 |
+| **数据库表** | 10 张 |
+| **代码语言** | TypeScript 100% |
+| **UI 组件** | 响应式设计 |
+| **支持设备** | 手机/平板/桌面 |
+
+## 🔄 版本历史
+
+当前版本：**v1.0.1**
+
+主要更新：
+- ✨ 访客模式（无需登录即可使用）
+- 👑 管理员功能（用户管理 + 密码重置）
+- 📊 统一时间线历史记录
+- 🔐 用户名登录方式
+- ⚡ 全局状态管理优化
+- 🗄️ 数据库从 Supabase 迁移到 Neon
 
 ## 📄 许可证
 
-MIT License
+MIT License - 可自由使用、修改和分发
 
 ## 🤝 贡献
 
 欢迎提交 Issue 和 Pull Request！
 
+### 贡献指南
+1. Fork 本项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启 Pull Request
+
 ## 📧 联系方式
 
-- GitHub: https://github.com/goushuai888/health-calculator
-- Issues: https://github.com/goushuai888/health-calculator/issues
+- **项目地址**：https://github.com/goushuai888/health-calculator
+- **在线演示**：https://health-calculator.edgeone.app
+- **问题反馈**：https://github.com/goushuai888/health-calculator/issues
 
 ---
 
-**免责声明**：本工具仅供参考，计算结果不能替代专业医疗建议。如有健康问题，请咨询专业医生。
+## ⚠️ 免责声明
+
+本健康计算器工具仅供参考和教育用途。计算结果基于常见的健康评估公式，**不能替代专业医疗建议、诊断或治疗**。
+
+如有任何健康问题或疑虑，请咨询专业医生或医疗机构。
+
+---
+
+**Made with ❤️ using Next.js 14 + Neon PostgreSQL**
