@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, memo, useCallback } from 'react'
 import { Button } from './ui/Button'
 import { useUser } from '@/contexts/UserContext'
 
@@ -14,7 +14,7 @@ interface HeaderProps {
   } | null
 }
 
-export function Header({ user: propUser }: HeaderProps) {
+export const Header = memo(function Header({ user: propUser }: HeaderProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { user: contextUser, setUser } = useUser()
@@ -22,7 +22,7 @@ export function Header({ user: propUser }: HeaderProps) {
   // 优先使用 context 中的 user，如果没有则使用 prop
   const user = contextUser || propUser
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
       setUser(null) // 清除全局用户状态
@@ -31,7 +31,7 @@ export function Header({ user: propUser }: HeaderProps) {
     } catch (error) {
       console.error('Logout error:', error)
     }
-  }
+  }, [setUser, router])
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -144,5 +144,5 @@ export function Header({ user: propUser }: HeaderProps) {
       </div>
     </header>
   )
-}
+})
 

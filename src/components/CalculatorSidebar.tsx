@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useState, memo, useMemo } from 'react'
 
 const calculators = [
   {
@@ -63,7 +63,7 @@ const calculators = [
   },
 ]
 
-export function CalculatorSidebar() {
+export const CalculatorSidebar = memo(function CalculatorSidebar() {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -167,5 +167,5 @@ export function CalculatorSidebar() {
       </aside>
     </>
   )
-}
+})
 

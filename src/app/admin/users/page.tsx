@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Header } from '@/components/Header'
 import { Card } from '@/components/ui/Card'
@@ -58,13 +58,19 @@ export default function AdminUsersPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [resetPasswordLoading, setResetPasswordLoading] = useState(false)
 
+  // 使用 useRef 防止重复请求
+  const isFetchingRef = useRef(false)
+
   useEffect(() => {
     fetchCurrentUser()
   }, [])
 
+  // 优化：使用稳定的依赖
   useEffect(() => {
-    fetchUsers()
-  }, [pagination.page, filters])
+    if (!isFetchingRef.current) {
+      fetchUsers()
+    }
+  }, [pagination.page, filters.role, filters.isActive, filters.search])
 
   const fetchCurrentUser = async () => {
     try {
@@ -92,7 +98,11 @@ export default function AdminUsersPage() {
     }
   }
 
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
+    // 防止重复请求
+    if (isFetchingRef.current) return
+    
+    isFetchingRef.current = true
     setLoading(true)
     try {
       const params = new URLSearchParams({
@@ -120,8 +130,9 @@ export default function AdminUsersPage() {
       console.error('Error fetching users:', error)
     } finally {
       setLoading(false)
+      isFetchingRef.current = false
     }
-  }
+  }, [pagination.page, pagination.limit, filters.role, filters.isActive, router])
 
   const toggleUserStatus = async (userId: string, currentStatus: boolean) => {
     if (!confirm(`确定要${currentStatus ? '禁用' : '启用'}该用户吗？`)) {
@@ -520,7 +531,13 @@ export default function AdminUsersPage() {
                 </p>
               </div>
 
-              <div className="space-y-4">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleResetPassword()
+                }}
+                className="space-y-4"
+              >
                 <Input
                   type="password"
                   label="新密码"
@@ -550,31 +567,32 @@ export default function AdminUsersPage() {
                     ⚠️ 两次输入的密码不一致
                   </p>
                 )}
-              </div>
-
-              <div className="flex space-x-3 mt-6">
-                <Button
-                  onClick={handleResetPassword}
-                  disabled={
-                    !newPassword ||
-                    !confirmPassword ||
-                    newPassword.length < 6 ||
-                    newPassword !== confirmPassword ||
-                    resetPasswordLoading
-                  }
-                  className="flex-1"
-                >
-                  {resetPasswordLoading ? '重置中...' : '确认重置'}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={closeResetPasswordModal}
-                  disabled={resetPasswordLoading}
-                  className="flex-1"
-                >
-                  取消
-                </Button>
-              </div>
+                
+                <div className="flex space-x-3 mt-6">
+                  <Button
+                    type="submit"
+                    disabled={
+                      !newPassword ||
+                      !confirmPassword ||
+                      newPassword.length < 6 ||
+                      newPassword !== confirmPassword ||
+                      resetPasswordLoading
+                    }
+                    className="flex-1"
+                  >
+                    {resetPasswordLoading ? '重置中...' : '确认重置'}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={closeResetPasswordModal}
+                    disabled={resetPasswordLoading}
+                    className="flex-1"
+                  >
+                    取消
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         )}
