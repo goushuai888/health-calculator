@@ -150,7 +150,6 @@ export const getUserHistoryData = cache(async (userId: string) => {
         age: true,
         bmr: true,
         calorieNeeds: true,
-        advice: true,
         createdAt: true,
       }
     }),
@@ -200,9 +199,9 @@ export const getUserHistoryData = cache(async (userId: string) => {
         id: true,
         age: true,
         maxHeartRate: true,
-        targetMin: true,
-        targetMax: true,
-        advice: true,
+        warmUpRange: true,
+        fatBurnRange: true,
+        cardioRange: true,
         createdAt: true,
       }
     }),
@@ -213,7 +212,7 @@ export const getUserHistoryData = cache(async (userId: string) => {
       select: {
         id: true,
         exerciseHeartRate: true,
-        exerciseDuration: true,
+        duration: true,
         sli: true,
         advice: true,
         createdAt: true,
@@ -225,11 +224,9 @@ export const getUserHistoryData = cache(async (userId: string) => {
       take: 100,
       select: {
         id: true,
-        goal: true,
         maintenance: true,
         deficit: true,
         surplus: true,
-        advice: true,
         createdAt: true,
       }
     }),
