@@ -9,7 +9,7 @@ import { ShortLocalTime } from '@/components/LocalTime'
 type HealthRecord = {
   id: string
   type: 'bmi' | 'bmr' | 'bodyFat' | 'waistHip' | 'bloodPressure' | 'targetHeartRate' | 'sli' | 'calorie'
-  createdAt: Date
+  createdAt: string // 修改为字符串，避免序列化问题
   data: any
 }
 
@@ -75,15 +75,15 @@ export default async function HistoryPage() {
 
   // 将所有记录合并为统一格式，并按时间倒序排列
   const allRecords: HealthRecord[] = [
-    ...bmiRecords.map(r => ({ id: r.id, type: 'bmi' as const, createdAt: r.createdAt, data: r })),
-    ...bmrRecords.map(r => ({ id: r.id, type: 'bmr' as const, createdAt: r.createdAt, data: r })),
-    ...bodyFatRecords.map(r => ({ id: r.id, type: 'bodyFat' as const, createdAt: r.createdAt, data: r })),
-    ...waistHipRecords.map(r => ({ id: r.id, type: 'waistHip' as const, createdAt: r.createdAt, data: r })),
-    ...bloodPressureRecords.map(r => ({ id: r.id, type: 'bloodPressure' as const, createdAt: r.createdAt, data: r })),
-    ...targetHeartRateRecords.map(r => ({ id: r.id, type: 'targetHeartRate' as const, createdAt: r.createdAt, data: r })),
-    ...sliRecords.map(r => ({ id: r.id, type: 'sli' as const, createdAt: r.createdAt, data: r })),
-    ...calorieRecords.map(r => ({ id: r.id, type: 'calorie' as const, createdAt: r.createdAt, data: r })),
-  ].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()) // 按时间倒序排列
+    ...bmiRecords.map(r => ({ id: r.id, type: 'bmi' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...bmrRecords.map(r => ({ id: r.id, type: 'bmr' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...bodyFatRecords.map(r => ({ id: r.id, type: 'bodyFat' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...waistHipRecords.map(r => ({ id: r.id, type: 'waistHip' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...bloodPressureRecords.map(r => ({ id: r.id, type: 'bloodPressure' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...targetHeartRateRecords.map(r => ({ id: r.id, type: 'targetHeartRate' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...sliRecords.map(r => ({ id: r.id, type: 'sli' as const, createdAt: r.createdAt.toISOString(), data: r })),
+    ...calorieRecords.map(r => ({ id: r.id, type: 'calorie' as const, createdAt: r.createdAt.toISOString(), data: r })),
+  ].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // 按时间倒序排列
 
   // 获取记录类型的图标和名称
   const getRecordInfo = (type: HealthRecord['type']) => {
