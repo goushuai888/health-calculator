@@ -3,10 +3,7 @@ import { prisma } from '@/lib/db'
 import { hashPassword } from '@/lib/password'
 import { registerSchema } from '@/lib/validators'
 import { sendWelcomeEmail } from '@/lib/email'
-import { cookies } from 'next/headers'
-import { sign } from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
+import { createSession } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -88,22 +85,8 @@ export async function POST(request: NextRequest) {
       username: user.username,
     }).catch(err => console.error('发送欢迎邮件失败:', err))
 
-    // 生成 JWT token
-    const token = sign(
-      { userId: user.id, email: user.email, role: user.role },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
-
-    // 设置 cookie
-    const cookieStore = await cookies()
-    cookieStore.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: '/',
-    })
+    // 创建会话（使用现有的 auth 系统）
+    await createSession(user.id, user.email, user.username, user.role)
     
     return NextResponse.json(
       {
