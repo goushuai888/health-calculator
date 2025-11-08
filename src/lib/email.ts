@@ -25,7 +25,7 @@ export async function sendVerificationCode({
 
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      from: process.env.EMAIL_FROM || 'noreply@mail.langne.com',
       to: email,
       subject,
       html: `
@@ -171,7 +171,7 @@ export async function sendWelcomeEmail({
 }: SendWelcomeEmailParams) {
   try {
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      from: process.env.EMAIL_FROM || 'noreply@mail.langne.com',
       to: email,
       subject: '欢迎使用健康计算器！',
       html: `
