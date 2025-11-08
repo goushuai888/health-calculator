@@ -47,6 +47,16 @@ export default function AdminUsersPage() {
     search: '',
   })
   const [currentUser, setCurrentUser] = useState<any>(null)
+  
+  // 重置密码相关状态
+  const [resetPasswordModal, setResetPasswordModal] = useState({
+    isOpen: false,
+    userId: '',
+    username: '',
+  })
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [resetPasswordLoading, setResetPasswordLoading] = useState(false)
 
   useEffect(() => {
     fetchCurrentUser()
@@ -184,6 +194,72 @@ export default function AdminUsersPage() {
     } catch (error) {
       console.error('Error deleting user:', error)
       alert('删除失败')
+    }
+  }
+
+  const openResetPasswordModal = (userId: string, username: string) => {
+    setResetPasswordModal({
+      isOpen: true,
+      userId,
+      username,
+    })
+    setNewPassword('')
+    setConfirmPassword('')
+  }
+
+  const closeResetPasswordModal = () => {
+    setResetPasswordModal({
+      isOpen: false,
+      userId: '',
+      username: '',
+    })
+    setNewPassword('')
+    setConfirmPassword('')
+  }
+
+  const handleResetPassword = async () => {
+    // 验证密码
+    if (!newPassword) {
+      alert('请输入新密码')
+      return
+    }
+
+    if (newPassword.length < 6) {
+      alert('密码至少需要6个字符')
+      return
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert('两次输入的密码不一致')
+      return
+    }
+
+    setResetPasswordLoading(true)
+
+    try {
+      const response = await fetch(
+        `/api/admin/users/${resetPasswordModal.userId}/reset-password`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ newPassword }),
+        }
+      )
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        alert(data.error || '重置密码失败')
+        return
+      }
+
+      alert(data.message || '密码已成功重置')
+      closeResetPasswordModal()
+    } catch (error) {
+      console.error('Error resetting password:', error)
+      alert('重置密码失败')
+    } finally {
+      setResetPasswordLoading(false)
     }
   }
 
@@ -371,6 +447,14 @@ export default function AdminUsersPage() {
                           </button>
                           <span className="text-gray-300">|</span>
                           <button
+                            onClick={() => openResetPasswordModal(user.id, user.username)}
+                            className="text-sm text-orange-600 hover:text-orange-800"
+                            disabled={user.id === currentUser.id}
+                          >
+                            重置密码
+                          </button>
+                          <span className="text-gray-300">|</span>
+                          <button
                             onClick={() => deleteUser(user.id, user.username)}
                             className="text-sm text-red-600 hover:text-red-800"
                             disabled={user.id === currentUser.id}
@@ -418,6 +502,82 @@ export default function AdminUsersPage() {
             </div>
           )}
         </Card>
+
+        {/* 重置密码弹窗 */}
+        {resetPasswordModal.isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                重置用户密码
+              </h3>
+              
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>用户：</strong>{resetPasswordModal.username}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  ⚠️ 重置后，该用户需要使用新密码登录
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <Input
+                  type="password"
+                  label="新密码"
+                  placeholder="请输入新密码（至少6个字符）"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+
+                <Input
+                  type="password"
+                  label="确认新密码"
+                  placeholder="请再次输入新密码"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  autoComplete="new-password"
+                />
+
+                {newPassword && newPassword.length < 6 && (
+                  <p className="text-sm text-red-600">
+                    ⚠️ 密码至少需要6个字符
+                  </p>
+                )}
+
+                {newPassword && confirmPassword && newPassword !== confirmPassword && (
+                  <p className="text-sm text-red-600">
+                    ⚠️ 两次输入的密码不一致
+                  </p>
+                )}
+              </div>
+
+              <div className="flex space-x-3 mt-6">
+                <Button
+                  onClick={handleResetPassword}
+                  disabled={
+                    !newPassword ||
+                    !confirmPassword ||
+                    newPassword.length < 6 ||
+                    newPassword !== confirmPassword ||
+                    resetPasswordLoading
+                  }
+                  className="flex-1"
+                >
+                  {resetPasswordLoading ? '重置中...' : '确认重置'}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={closeResetPasswordModal}
+                  disabled={resetPasswordLoading}
+                  className="flex-1"
+                >
+                  取消
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
