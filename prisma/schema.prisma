@@ -19,16 +19,19 @@ enum UserRole {
 
 // 用户表 (自定义认证)
 model User {
-  id          String    @id @default(uuid())
-  email       String    @unique
-  password    String    // bcrypt 加密
-  username    String    @unique
-  avatar      String?
-  role        UserRole  @default(USER)   // 用户角色，默认为普通用户
-  isActive    Boolean   @default(true)   // 账户是否激活
-  lastLoginAt DateTime?                  // 最后登录时间
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String    @id @default(uuid())
+  email             String    @unique
+  password          String    // bcrypt 加密
+  username          String    @unique
+  avatar            String?
+  role              UserRole  @default(USER)      // 用户角色，默认为普通用户
+  isActive          Boolean   @default(true)      // 账户是否激活
+  emailVerified     Boolean   @default(false)     // 邮箱是否已验证
+  verificationToken String?   @unique             // 邮箱验证令牌
+  tokenExpiry       DateTime?                     // 令牌过期时间
+  lastLoginAt       DateTime?                     // 最后登录时间
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   // 用户个人信息
   profile UserProfile?
@@ -48,6 +51,7 @@ model User {
   @@index([isActive, createdAt])      // 复合索引：按注册时间查询活跃用户
   @@index([lastLoginAt])              // 索引：查询最近登录
   @@index([createdAt])                // 索引：按注册时间排序
+  @@index([verificationToken])        // 索引：快速查找验证令牌
 }
 
 // 用户个人资料
