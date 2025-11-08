@@ -3,8 +3,7 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Header } from '@/components/Header'
 import { Card } from '@/components/ui/Card'
-import { format } from 'date-fns'
-import { zhCN } from 'date-fns/locale'
+import { ShortLocalTime } from '@/components/LocalTime'
 
 // 统一的记录类型
 type HealthRecord = {
@@ -184,7 +183,7 @@ export default async function HistoryPage() {
                           </div>
                         </td>
                         <td className="py-3 px-3 text-sm text-gray-600 whitespace-nowrap">
-                          {format(new Date(record.createdAt), 'MM-dd HH:mm', { locale: zhCN })}
+                          <ShortLocalTime date={record.createdAt} />
                         </td>
                         <td className="py-3 px-3 text-sm text-gray-900">
                           {detailsContent}

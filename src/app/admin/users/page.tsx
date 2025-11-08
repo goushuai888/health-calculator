@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
+import { FullLocalTime } from '@/components/LocalTime'
 
 interface User {
   id: string
@@ -274,9 +275,7 @@ export default function AdminUsersPage() {
     }
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('zh-CN')
-  }
+  // 移除 formatDate 函数，使用 LocalTime 组件替代
 
   const filteredUsers = users.filter(user => {
     if (filters.search) {
@@ -441,11 +440,13 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="py-3 px-4">
                         <p className="text-xs text-gray-600">
-                          {user.lastLoginAt ? formatDate(user.lastLoginAt) : '从未登录'}
+                          {user.lastLoginAt ? <FullLocalTime date={user.lastLoginAt} /> : '从未登录'}
                         </p>
                       </td>
                       <td className="py-3 px-4">
-                        <p className="text-xs text-gray-600">{formatDate(user.createdAt)}</p>
+                        <p className="text-xs text-gray-600">
+                          <FullLocalTime date={user.createdAt} />
+                        </p>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center space-x-2">
