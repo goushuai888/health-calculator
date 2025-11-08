@@ -13,7 +13,16 @@ export default async function DashboardPage() {
   }
 
   // 获取最近的计算记录
-  const [bmiRecords, bmrRecords, bodyFatRecords] = await Promise.all([
+  const [
+    bmiRecords, 
+    bmrRecords, 
+    bodyFatRecords,
+    waistHipRecords,
+    bloodPressureRecords,
+    targetHeartRateRecords,
+    sliRecords,
+    calorieRecords
+  ] = await Promise.all([
     prisma.bMIRecord.findMany({
       where: { userId: session.userId },
       orderBy: { createdAt: 'desc' },
@@ -29,11 +38,146 @@ export default async function DashboardPage() {
       orderBy: { createdAt: 'desc' },
       take: 1,
     }),
+    prisma.waistHipRecord.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    }),
+    prisma.bloodPressureRecord.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    }),
+    prisma.targetHeartRateRecord.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    }),
+    prisma.sLIRecord.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    }),
+    prisma.calorieRecord.findMany({
+      where: { userId: session.userId },
+      orderBy: { createdAt: 'desc' },
+      take: 1,
+    }),
   ])
 
   const latestBMI = bmiRecords[0]
   const latestBMR = bmrRecords[0]
   const latestBodyFat = bodyFatRecords[0]
+
+  // 找出所有记录中最新的一条
+  type LatestRecord = {
+    type: string
+    icon: string
+    title: string
+    advice: string
+    createdAt: Date
+    data?: any
+  }
+
+  const allLatest: LatestRecord[] = []
+  
+  if (latestBMI) {
+    allLatest.push({
+      type: 'bmi',
+      icon: '⚖️',
+      title: 'BMI 计算',
+      advice: latestBMI.advice,
+      createdAt: latestBMI.createdAt,
+      data: `身高 ${latestBMI.height}cm · 体重 ${latestBMI.weight}kg · BMI ${latestBMI.bmi}`
+    })
+  }
+  
+  if (latestBMR) {
+    allLatest.push({
+      type: 'bmr',
+      icon: '🔥',
+      title: 'BMR 计算',
+      advice: `基础代谢率 ${latestBMR.bmr} 千卡/天`,
+      createdAt: latestBMR.createdAt,
+      data: `每日热量需求 ${latestBMR.calorieNeeds} 千卡`
+    })
+  }
+  
+  if (latestBodyFat) {
+    allLatest.push({
+      type: 'bodyFat',
+      icon: '📊',
+      title: '体脂率记录',
+      advice: latestBodyFat.advice,
+      createdAt: latestBodyFat.createdAt,
+      data: `腰围 ${latestBodyFat.waist}cm · 臀围 ${latestBodyFat.hip}cm · 体脂率 ${latestBodyFat.bodyFatPercentage}%`
+    })
+  }
+
+  if (waistHipRecords[0]) {
+    const record = waistHipRecords[0]
+    allLatest.push({
+      type: 'waistHip',
+      icon: '📏',
+      title: '腰臀比记录',
+      advice: record.advice,
+      createdAt: record.createdAt,
+      data: `腰围 ${record.waist}cm · 臀围 ${record.hip}cm · 腰臀比 ${record.ratio}`
+    })
+  }
+
+  if (bloodPressureRecords[0]) {
+    const record = bloodPressureRecords[0]
+    allLatest.push({
+      type: 'bloodPressure',
+      icon: '💓',
+      title: '血压记录',
+      advice: record.advice,
+      createdAt: record.createdAt,
+      data: `收缩压 ${record.systolic}mmHg · 舒张压 ${record.diastolic}mmHg`
+    })
+  }
+
+  if (targetHeartRateRecords[0]) {
+    const record = targetHeartRateRecords[0]
+    allLatest.push({
+      type: 'targetHeartRate',
+      icon: '❤️',
+      title: '目标心率',
+      advice: `热身区间 ${record.warmUpRange}，燃脂区间 ${record.fatBurnRange}`,
+      createdAt: record.createdAt,
+      data: `年龄 ${record.age}岁 · 最大心率 ${record.maxHeartRate}bpm`
+    })
+  }
+
+  if (sliRecords[0]) {
+    const record = sliRecords[0]
+    allLatest.push({
+      type: 'sli',
+      icon: '🏃',
+      title: '睡眠潜伏指数',
+      advice: record.advice,
+      createdAt: record.createdAt,
+      data: `入睡时长 ${record.duration}分钟 · SLI ${record.sli}`
+    })
+  }
+
+  if (calorieRecords[0]) {
+    const record = calorieRecords[0]
+    allLatest.push({
+      type: 'calorie',
+      icon: '🍽️',
+      title: '热量需求',
+      advice: `维持体重: ${record.maintenance} 千卡/天`,
+      createdAt: record.createdAt,
+      data: `减重: ${record.deficit} 千卡/天 · 增重: ${record.surplus} 千卡/天`
+    })
+  }
+
+  // 按时间倒序排序，取最新的一条
+  const latestActivity = allLatest.sort((a, b) => 
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )[0]
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -120,15 +264,21 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Recent Activity */}
-        {latestBMI && (
+        {latestActivity && (
           <Card title="最近活动">
             <div className="space-y-4">
               <div className="flex items-start border-l-4 border-primary-500 pl-4 py-2">
                 <div className="flex-1">
-                  <p className="font-medium">BMI 计算</p>
-                  <p className="text-sm text-gray-600 mt-1">{latestBMI.advice}</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xl">{latestActivity.icon}</span>
+                    <p className="font-medium">{latestActivity.title}</p>
+                  </div>
+                  {latestActivity.data && (
+                    <p className="text-sm text-gray-500 mt-1">{latestActivity.data}</p>
+                  )}
+                  <p className="text-sm text-gray-600 mt-1">{latestActivity.advice}</p>
                   <p className="text-xs text-gray-500 mt-2">
-                    {new Date(latestBMI.createdAt).toLocaleString('zh-CN')}
+                    {new Date(latestActivity.createdAt).toLocaleString('zh-CN')}
                   </p>
                 </div>
               </div>
