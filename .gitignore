@@ -5,6 +5,11 @@
 
 # testing
 /coverage
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+__tests__/
 
 # next.js
 /.next/
@@ -25,12 +30,11 @@ yarn-error.log*
 # local env files
 .env
 .env*.local
-EDGEONE_ENV_READY.txt
-EDGEONE_ENV_FINAL.txt
-SUPABASE_PROJECT_INFO.md
-NEON_MIGRATION_CONFIG.txt
-EDGEONE_NEON_ENV.txt
-EDGEONE_ENV_PRODUCTION.txt
+*.env.txt
+*.env.md
+*_ENV*.txt
+*_CONFIG*.txt
+*PROJECT_INFO.md
 
 # vercel
 .vercel
@@ -41,4 +45,11 @@ next-env.d.ts
 
 # prisma
 prisma/migrations
+
+# temporary and debug files
+*.log
+*.tmp
+*.temp
+.vscode/
+.idea/
 
