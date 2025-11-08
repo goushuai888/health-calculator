@@ -27,6 +27,7 @@ yarn-error.log*
 .env*.local
 EDGEONE_ENV_READY.txt
 EDGEONE_ENV_FINAL.txt
+SUPABASE_PROJECT_INFO.md
 
 # vercel
 .vercel
