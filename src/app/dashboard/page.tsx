@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Header } from '@/components/Header'
 import { Card } from '@/components/ui/Card'
+import { FullLocalTime } from '@/components/LocalTime'
 import Link from 'next/link'
 
 export default async function DashboardPage() {
@@ -203,7 +204,7 @@ export default async function DashboardPage() {
             </div>
             {latestBMI && (
               <p className="text-sm text-gray-600 mt-2">
-                {new Date(latestBMI.createdAt).toLocaleDateString('zh-CN')}
+                <FullLocalTime date={latestBMI.createdAt} />
               </p>
             )}
           </Card>
@@ -235,7 +236,7 @@ export default async function DashboardPage() {
             </div>
             {latestBodyFat && (
               <p className="text-sm text-gray-600 mt-2">
-                {new Date(latestBodyFat.createdAt).toLocaleDateString('zh-CN')}
+                <FullLocalTime date={latestBodyFat.createdAt} />
               </p>
             )}
           </Card>
@@ -278,7 +279,7 @@ export default async function DashboardPage() {
                   )}
                   <p className="text-sm text-gray-600 mt-1">{latestActivity.advice}</p>
                   <p className="text-xs text-gray-500 mt-2">
-                    {new Date(latestActivity.createdAt).toLocaleString('zh-CN')}
+                    <FullLocalTime date={latestActivity.createdAt} />
                   </p>
                 </div>
               </div>
