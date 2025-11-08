@@ -19,6 +19,8 @@ export default function RegisterPage() {
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -61,6 +63,13 @@ export default function RegisterPage() {
         return
       }
 
+      // 如果需要邮箱验证
+      if (data.requiresVerification) {
+        setRegisteredEmail(formData.email)
+        setSuccess(true)
+        return
+      }
+
       // 注册成功后，刷新全局用户状态
       await refreshUser()
       router.push('/dashboard')
@@ -80,7 +89,53 @@ export default function RegisterPage() {
           <p className="text-gray-600">开始您的健康管理之旅</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        {success ? (
+          <div className="space-y-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
+              <div className="text-4xl mb-3">📧</div>
+              <h3 className="text-lg font-semibold text-blue-900 mb-2">
+                注册成功！请验证您的邮箱
+              </h3>
+              <p className="text-blue-700 mb-4">
+                我们已向 <strong>{registeredEmail}</strong> 发送了验证邮件。
+              </p>
+              <div className="bg-white rounded p-4 mb-4">
+                <p className="text-sm text-gray-700 mb-2">📝 <strong>下一步：</strong></p>
+                <ol className="text-sm text-gray-600 text-left space-y-1 list-decimal list-inside">
+                  <li>检查您的邮箱收件箱</li>
+                  <li>找到来自健康计算器的邮件</li>
+                  <li>点击邮件中的验证按钮</li>
+                  <li>验证成功后即可登录</li>
+                </ol>
+              </div>
+              <p className="text-xs text-blue-600">
+                💡 验证链接将在 24 小时后失效
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                没收到邮件？请检查垃圾邮件文件夹
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => router.push('/login')}
+                className="w-full"
+              >
+                前往登录
+              </Button>
+              
+              <div className="text-center">
+                <Link
+                  href="/"
+                  className="text-sm text-gray-500 hover:text-gray-700"
+                >
+                  ← 返回首页
+                </Link>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
@@ -131,25 +186,30 @@ export default function RegisterPage() {
             required
           />
 
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? '注册中...' : '注册'}
-          </Button>
-        </form>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? '注册中...' : '注册'}
+            </Button>
+          </form>
+        )}
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            已有账户？{' '}
-            <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-              立即登录
-            </Link>
-          </p>
-        </div>
+        {!success && (
+          <>
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-600">
+                已有账户？{' '}
+                <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+                  立即登录
+                </Link>
+              </p>
+            </div>
 
-        <div className="mt-4 text-center">
-          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-            ← 返回首页
-          </Link>
-        </div>
+            <div className="mt-4 text-center">
+              <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+                ← 返回首页
+              </Link>
+            </div>
+          </>
+        )}
       </Card>
     </div>
   )

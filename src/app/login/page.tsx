@@ -71,15 +71,23 @@ export default function LoginPage() {
             required
           />
 
-          <Input
-            type="password"
-            label="密码"
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">密码</label>
+              <Link href="/forgot-password" className="text-xs text-primary-600 hover:text-primary-700">
+                忘记密码？
+              </Link>
+            </div>
+            <input
+              type="password"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? '登录中...' : '登录'}

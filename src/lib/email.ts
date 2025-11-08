@@ -247,3 +247,162 @@ export async function sendWelcomeEmail({
   }
 }
 
+interface SendPasswordResetEmailParams {
+  email: string
+  username: string
+  resetToken: string
+}
+
+export async function sendPasswordResetEmail({
+  email,
+  username,
+  resetToken,
+}: SendPasswordResetEmailParams) {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`
+
+  try {
+    const { data, error } = await resend.emails.send({
+      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
+      to: email,
+      subject: '重置您的密码 - 健康计算器',
+      html: `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body {
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                line-height: 1.6;
+                color: #333;
+                max-width: 600px;
+                margin: 0 auto;
+                padding: 20px;
+              }
+              .container {
+                background-color: #ffffff;
+                border-radius: 8px;
+                padding: 40px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              }
+              .header {
+                text-align: center;
+                margin-bottom: 30px;
+              }
+              .logo {
+                font-size: 48px;
+                margin-bottom: 10px;
+              }
+              h1 {
+                color: #dc2626;
+                margin: 0 0 20px 0;
+                font-size: 24px;
+              }
+              .content {
+                margin-bottom: 30px;
+                font-size: 16px;
+              }
+              .button {
+                display: inline-block;
+                background-color: #dc2626;
+                color: #ffffff !important;
+                text-decoration: none;
+                padding: 14px 32px;
+                border-radius: 6px;
+                font-weight: 600;
+                text-align: center;
+                margin: 20px 0;
+              }
+              .button:hover {
+                background-color: #b91c1c;
+              }
+              .link {
+                word-break: break-all;
+                color: #6b7280;
+                font-size: 14px;
+                margin-top: 20px;
+              }
+              .footer {
+                margin-top: 40px;
+                padding-top: 20px;
+                border-top: 1px solid #e5e7eb;
+                font-size: 14px;
+                color: #6b7280;
+                text-align: center;
+              }
+              .warning {
+                background-color: #fee2e2;
+                border-left: 4px solid #dc2626;
+                padding: 12px 16px;
+                margin: 20px 0;
+                border-radius: 4px;
+                font-size: 14px;
+              }
+              .info {
+                background-color: #dbeafe;
+                border-left: 4px solid #3b82f6;
+                padding: 12px 16px;
+                margin: 20px 0;
+                border-radius: 4px;
+                font-size: 14px;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <div class="logo">🔐</div>
+                <h1>重置您的密码</h1>
+              </div>
+              
+              <div class="content">
+                <p>您好 <strong>${username}</strong>，</p>
+                <p>我们收到了您的密码重置请求。请点击下方按钮重置您的密码：</p>
+                
+                <div style="text-align: center;">
+                  <a href="${resetUrl}" class="button">
+                    重置密码
+                  </a>
+                </div>
+                
+                <p class="link">
+                  或复制以下链接到浏览器：<br>
+                  <a href="${resetUrl}">${resetUrl}</a>
+                </p>
+                
+                <div class="warning">
+                  ⏰ <strong>注意：</strong>此重置链接将在 1 小时后失效。
+                </div>
+                
+                <div class="info">
+                  🔒 <strong>安全提示：</strong>如果您没有请求重置密码，请忽略此邮件。您的密码不会被更改。
+                </div>
+              </div>
+              
+              <div class="footer">
+                <p>
+                  此邮件由健康计算器自动发送，请勿直接回复。<br>
+                  © 2024 健康计算器. 保留所有权利。
+                </p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `,
+    })
+
+    if (error) {
+      console.error('发送密码重置邮件失败:', error)
+      return { success: false, error }
+    }
+
+    console.log('密码重置邮件发送成功:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('发送密码重置邮件异常:', error)
+    return { success: false, error }
+  }
+}
+
