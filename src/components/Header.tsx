@@ -46,17 +46,17 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
           <nav className="hidden md:flex items-center space-x-4">
             {user ? (
               <>
-                <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2">
+                <Link href="/dashboard" prefetch={true} className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   仪表板
                 </Link>
-                <Link href="/calculators" className="text-gray-700 hover:text-primary-600 px-3 py-2">
+                <Link href="/calculators" prefetch={true} className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   计算器
                 </Link>
-                <Link href="/history" className="text-gray-700 hover:text-primary-600 px-3 py-2">
+                <Link href="/history" prefetch={true} className="text-gray-700 hover:text-primary-600 px-3 py-2 transition-colors">
                   历史记录
                 </Link>
                 {user.role === 'ADMIN' && (
-                  <Link href="/admin" className="text-orange-600 hover:text-orange-700 px-3 py-2 font-medium">
+                  <Link href="/admin" prefetch={true} className="text-orange-600 hover:text-orange-700 px-3 py-2 font-medium transition-colors">
                     👑 管理员面板
                   </Link>
                 )}
@@ -72,10 +72,10 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
               </>
             ) : (
               <>
-                <Link href="/login">
+                <Link href="/login" prefetch={true}>
                   <Button variant="ghost">登录</Button>
                 </Link>
-                <Link href="/register">
+                <Link href="/register" prefetch={true}>
                   <Button variant="primary">注册</Button>
                 </Link>
               </>
@@ -104,17 +104,17 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
           <div className="md:hidden py-4 border-t border-gray-200">
             {user ? (
               <>
-                <Link href="/dashboard" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
+                <Link href="/dashboard" prefetch={true} className="block px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                   仪表板
                 </Link>
-                <Link href="/calculators" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
+                <Link href="/calculators" prefetch={true} className="block px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                   计算器
                 </Link>
-                <Link href="/history" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
+                <Link href="/history" prefetch={true} className="block px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                   历史记录
                 </Link>
                 {user.role === 'ADMIN' && (
-                  <Link href="/admin" className="block px-3 py-2 text-orange-600 hover:bg-orange-50 font-medium">
+                  <Link href="/admin" prefetch={true} className="block px-3 py-2 text-orange-600 hover:bg-orange-50 font-medium transition-colors">
                     👑 管理员面板
                   </Link>
                 )}
@@ -130,10 +130,10 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
               </>
             ) : (
               <>
-                <Link href="/login" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
+                <Link href="/login" prefetch={true} className="block px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                   登录
                 </Link>
-                <Link href="/register" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
+                <Link href="/register" prefetch={true} className="block px-3 py-2 text-gray-700 hover:bg-gray-50 transition-colors">
                   注册
                 </Link>
               </>

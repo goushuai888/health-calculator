@@ -1,15 +1,14 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { prisma } from '@/lib/db'
+import { getUserHistoryData } from '@/lib/data-cache'
 import { Header } from '@/components/Header'
 import { Card } from '@/components/ui/Card'
 import { ShortLocalTime } from '@/components/LocalTime'
 
-// 统一的记录类型
 type HealthRecord = {
   id: string
   type: 'bmi' | 'bmr' | 'bodyFat' | 'waistHip' | 'bloodPressure' | 'targetHeartRate' | 'sli' | 'calorie'
-  createdAt: string // 修改为字符串，避免序列化问题
+  createdAt: string
   data: any
 }
 
@@ -20,58 +19,16 @@ export default async function HistoryPage() {
     redirect('/login')
   }
 
-  // 获取所有类型的记录
-  const [
-    bmiRecords, 
-    bmrRecords, 
-    bodyFatRecords, 
+  const {
+    bmiRecords,
+    bmrRecords,
+    bodyFatRecords,
     waistHipRecords,
     bloodPressureRecords,
     targetHeartRateRecords,
     sliRecords,
     calorieRecords
-  ] = await Promise.all([
-    prisma.bMIRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.bMRRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.bodyFatRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.waistHipRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.bloodPressureRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.targetHeartRateRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.sLIRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-    prisma.calorieRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    }),
-  ])
+  } = await getUserHistoryData(session.userId)
 
   // 将所有记录合并为统一格式，并按时间倒序排列
   const allRecords: HealthRecord[] = [

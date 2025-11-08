@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
-import { prisma } from '@/lib/db'
+import { getUserDashboardData } from '@/lib/data-cache'
 import { Header } from '@/components/Header'
 import { Card } from '@/components/ui/Card'
 import { FullLocalTime } from '@/components/LocalTime'
@@ -13,58 +13,16 @@ export default async function DashboardPage() {
     redirect('/login')
   }
 
-  // 获取最近的计算记录
-  const [
-    bmiRecords, 
-    bmrRecords, 
+  const {
+    bmiRecords,
+    bmrRecords,
     bodyFatRecords,
     waistHipRecords,
     bloodPressureRecords,
     targetHeartRateRecords,
     sliRecords,
     calorieRecords
-  ] = await Promise.all([
-    prisma.bMIRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.bMRRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.bodyFatRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.waistHipRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.bloodPressureRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.targetHeartRateRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.sLIRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-    prisma.calorieRecord.findMany({
-      where: { userId: session.userId },
-      orderBy: { createdAt: 'desc' },
-      take: 1,
-    }),
-  ])
+  } = await getUserDashboardData(session.userId)
 
   const latestBMI = bmiRecords[0]
   const latestBMR = bmrRecords[0]
