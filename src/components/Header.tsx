@@ -17,13 +17,9 @@ interface HeaderProps {
 export const Header = memo(function Header({ user: propUser }: HeaderProps) {
   const router = useRouter()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const { user: contextUser, setUser, loading } = useUser()
+  const { user: contextUser, setUser } = useUser()
   
-  // 优先使用 context 中的 user，如果没有则使用 prop
   const user = contextUser || propUser
-  
-  // 在加载期间，如果有 propUser 就使用它，避免闪烁
-  const displayUser = loading && !contextUser ? propUser : user
 
   const handleLogout = useCallback(async () => {
     try {
@@ -48,7 +44,7 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-4">
-            {displayUser ? (
+            {user ? (
               <>
                 <Link href="/dashboard" className="text-gray-700 hover:text-primary-600 px-3 py-2">
                   仪表板
@@ -59,15 +55,15 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
                 <Link href="/history" className="text-gray-700 hover:text-primary-600 px-3 py-2">
                   历史记录
                 </Link>
-                {displayUser.role === 'ADMIN' && (
+                {user.role === 'ADMIN' && (
                   <Link href="/admin" className="text-orange-600 hover:text-orange-700 px-3 py-2 font-medium">
                     👑 管理员面板
                   </Link>
                 )}
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
                   <span className="text-sm text-gray-600">
-                    你好，{displayUser.username}
-                    {displayUser.role === 'ADMIN' && <span className="ml-1 text-orange-600 font-semibold">👑</span>}
+                    你好，{user.username}
+                    {user.role === 'ADMIN' && <span className="ml-1 text-orange-600 font-semibold">👑</span>}
                   </span>
                   <Button variant="outline" size="sm" onClick={handleLogout}>
                     登出
@@ -106,7 +102,7 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
         {/* Mobile menu */}
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t border-gray-200">
-            {displayUser ? (
+            {user ? (
               <>
                 <Link href="/dashboard" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
                   仪表板
@@ -117,15 +113,15 @@ export const Header = memo(function Header({ user: propUser }: HeaderProps) {
                 <Link href="/history" className="block px-3 py-2 text-gray-700 hover:bg-gray-50">
                   历史记录
                 </Link>
-                {displayUser.role === 'ADMIN' && (
+                {user.role === 'ADMIN' && (
                   <Link href="/admin" className="block px-3 py-2 text-orange-600 hover:bg-orange-50 font-medium">
                     👑 管理员面板
                   </Link>
                 )}
                 <div className="px-3 py-2 border-t border-gray-200 mt-2">
                   <p className="text-sm text-gray-600 mb-2">
-                    你好，{displayUser.username}
-                    {displayUser.role === 'ADMIN' && <span className="ml-1 text-orange-600 font-semibold">👑</span>}
+                    你好，{user.username}
+                    {user.role === 'ADMIN' && <span className="ml-1 text-orange-600 font-semibold">👑</span>}
                   </p>
                   <Button variant="outline" size="sm" onClick={handleLogout} className="w-full">
                     登出

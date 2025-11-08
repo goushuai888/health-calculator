@@ -57,23 +57,21 @@ function saveUserToStorage(user: User | null) {
 }
 
 export function UserProvider({ children }: { children: ReactNode }) {
-  // 初始化时从 localStorage 读取用户信息，避免闪烁
-  const [user, setUser] = useState<User | null>(() => loadUserFromStorage())
-  const [loading, setLoading] = useState(true)
-  const isRefreshing = useRef(false) // 防止并发请求
+  const [user, setUser] = useState<User | null>(() => {
+    const storedUser = loadUserFromStorage()
+    if (storedUser) {
+      userCache = { user: storedUser, timestamp: Date.now() }
+    }
+    return storedUser
+  })
+  const [loading, setLoading] = useState(false)
+  const isRefreshing = useRef(false)
+  const hasVerified = useRef(false)
 
   const refreshUser = useCallback(async () => {
-    // 防止并发请求
-    if (isRefreshing.current) {
-      return
-    }
+    if (isRefreshing.current) return
 
-    // 检查缓存
     if (userCache && Date.now() - userCache.timestamp < CACHE_DURATION) {
-      const cachedUser = userCache.user
-      setUser(cachedUser)
-      saveUserToStorage(cachedUser) // 同步到 localStorage
-      setLoading(false)
       return
     }
 
@@ -82,13 +80,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/auth/me', {
         credentials: 'include',
       })
+      
       if (response.ok) {
         const data = await response.json()
         const fetchedUser = data.user
         setUser(fetchedUser)
-        // 更新缓存
         userCache = { user: fetchedUser, timestamp: Date.now() }
-        // 保存到 localStorage
         saveUserToStorage(fetchedUser)
       } else if (response.status === 401) {
         setUser(null)
@@ -96,25 +93,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
         saveUserToStorage(null)
       }
     } catch (error) {
-      // 出错时不清除 localStorage 中的用户信息，保持显示
-      // 只在明确 401 时才清除
       console.error('Failed to refresh user:', error)
     } finally {
-      setLoading(false)
       isRefreshing.current = false
     }
   }, [])
 
   const setUserWithCache = useCallback((newUser: User | null) => {
     setUser(newUser)
-    // 更新缓存
     userCache = { user: newUser, timestamp: Date.now() }
-    // 保存到 localStorage
     saveUserToStorage(newUser)
   }, [])
 
   useEffect(() => {
-    refreshUser()
+    if (!hasVerified.current) {
+      hasVerified.current = true
+      refreshUser()
+    }
   }, [refreshUser])
 
   return (

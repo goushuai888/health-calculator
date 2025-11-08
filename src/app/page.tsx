@@ -95,56 +95,112 @@ export default async function HomePage() {
         </div>
 
         {/* Features */}
-        <div className="mb-16">
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            为什么选择我们？
-          </h2>
-          <div className="grid md:grid-cols-4 gap-6">
-            <Card>
-              <div className="text-4xl mb-4">🎁</div>
-              <h3 className="text-xl font-semibold mb-2">完全免费</h3>
-              <p className="text-gray-600">
-                无需注册登录，所有计算器完全免费使用
-              </p>
-            </Card>
-            <Card>
-              <div className="text-4xl mb-4">📈</div>
-              <h3 className="text-xl font-semibold mb-2">数据追踪</h3>
-              <p className="text-gray-600">
-                注册后自动保存历史，可视化展示健康趋势
-              </p>
-            </Card>
-            <Card>
-              <div className="text-4xl mb-4">🔬</div>
-              <h3 className="text-xl font-semibold mb-2">科学准确</h3>
-              <p className="text-gray-600">
-                基于国际认可的健康计算公式和标准
-              </p>
-            </Card>
-            <Card>
-              <div className="text-4xl mb-4">🎯</div>
-              <h3 className="text-xl font-semibold mb-2">个性化建议</h3>
-              <p className="text-gray-600">
-                根据您的数据提供定制化的健康建议
-              </p>
-            </Card>
+        <div className="mb-20">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              为什么选择我们？
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              专业、免费、易用的健康管理解决方案
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            {/* 完全免费 */}
+            <div className="group">
+              <Card className="h-full text-center p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-primary-200">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative text-5xl">🎁</div>
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-primary-600 transition-colors">
+                  完全免费
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  无需注册登录，所有计算器完全免费使用
+                </p>
+              </Card>
+            </div>
+
+            {/* 数据追踪 */}
+            <div className="group">
+              <Card className="h-full text-center p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-green-200">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-100 to-green-200 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative text-5xl">📈</div>
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-green-600 transition-colors">
+                  数据追踪
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  注册后自动保存历史，可视化展示健康趋势
+                </p>
+              </Card>
+            </div>
+
+            {/* 科学准确 */}
+            <div className="group">
+              <Card className="h-full text-center p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-blue-200">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative text-5xl">🔬</div>
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-blue-600 transition-colors">
+                  科学准确
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  基于国际认可的健康计算公式和标准
+                </p>
+              </Card>
+            </div>
+
+            {/* 个性化建议 */}
+            <div className="group">
+              <Card className="h-full text-center p-8 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 border-transparent hover:border-purple-200">
+                <div className="relative inline-block mb-6">
+                  <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-purple-200 rounded-full blur-xl opacity-50 group-hover:opacity-75 transition-opacity"></div>
+                  <div className="relative text-5xl">🎯</div>
+                </div>
+                <h3 className="text-xl font-bold mb-3 text-gray-900 group-hover:text-purple-600 transition-colors">
+                  个性化建议
+                </h3>
+                <p className="text-gray-600 leading-relaxed">
+                  根据您的数据提供定制化的健康建议
+                </p>
+              </Card>
+            </div>
           </div>
         </div>
 
         {/* Calculators Grid */}
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 text-center mb-8">
-            健康计算工具
-          </h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+              健康计算工具
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              8 种专业健康评估工具，一键获取个性化建议
+            </p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {calculators.map((calc) => (
               <Link key={calc.id} href={calc.href}>
-                <Card className="h-full hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="text-4xl mb-3">{calc.icon}</div>
-                  <h3 className="text-lg font-semibold mb-2 text-gray-900">
+                <Card className="group h-full hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer border-2 border-transparent hover:border-primary-100">
+                  <div className="relative inline-block mb-4">
+                    <div className="absolute inset-0 bg-gradient-to-br from-primary-50 to-primary-100 rounded-full blur-lg opacity-0 group-hover:opacity-50 transition-opacity"></div>
+                    <div className="relative text-5xl">{calc.icon}</div>
+                  </div>
+                  <h3 className="text-lg font-bold mb-2 text-gray-900 group-hover:text-primary-600 transition-colors">
                     {calc.name}
                   </h3>
-                  <p className="text-sm text-gray-600">{calc.description}</p>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-4">{calc.description}</p>
+                  <div className="flex items-center text-primary-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                    立即使用
+                    <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                    </svg>
+                  </div>
                 </Card>
               </Link>
             ))}
