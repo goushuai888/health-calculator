@@ -28,8 +28,9 @@ export async function POST(request: NextRequest) {
       })
       recordId = record.id
       
-      // 刷新历史记录页面缓存
+      // 刷新历史记录和仪表板页面缓存
       revalidatePath('/history')
+      revalidatePath('/dashboard')
     }
     
     return NextResponse.json({
