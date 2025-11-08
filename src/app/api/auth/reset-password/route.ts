@@ -4,9 +4,9 @@ import { hashPassword } from '@/lib/password'
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, password } = await request.json()
+    const { email, code, password } = await request.json()
 
-    if (!token || !password) {
+    if (!email || !code || !password) {
       return NextResponse.json(
         { error: '缺少必要参数' },
         { status: 400 }
@@ -20,12 +20,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 查找有效的重置令牌
+    // 查找用户并验证验证码
     const user = await prisma.user.findFirst({
       where: {
-        resetToken: token,
-        resetTokenExpiry: {
-          gt: new Date(), // 令牌未过期
+        email,
+        verificationCode: code,
+        codeExpiry: {
+          gt: new Date(), // 验证码未过期
         },
       },
       select: {
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     if (!user) {
       return NextResponse.json(
-        { error: '重置链接无效或已过期' },
+        { error: '验证码无效或已过期' },
         { status: 400 }
       )
     }
@@ -45,13 +46,13 @@ export async function POST(request: NextRequest) {
     // 加密新密码
     const hashedPassword = await hashPassword(password)
 
-    // 更新密码并清除重置令牌
+    // 更新密码并清除验证码
     await prisma.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
-        resetToken: null,
-        resetTokenExpiry: null,
+        verificationCode: null,
+        codeExpiry: null,
       },
     })
 
@@ -74,4 +75,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-

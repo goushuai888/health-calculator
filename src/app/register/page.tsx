@@ -16,11 +16,13 @@ export default function RegisterPage() {
     username: '',
     password: '',
     confirmPassword: '',
+    verificationCode: '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
-  const [registeredEmail, setRegisteredEmail] = useState('')
+  const [sendingCode, setSendingCode] = useState(false)
+  const [codeSent, setCodeSent] = useState(false)
+  const [countdown, setCountdown] = useState(0)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
@@ -29,9 +31,71 @@ export default function RegisterPage() {
     }))
   }
 
+  const handleSendCode = async () => {
+    if (!formData.email) {
+      setError('请先输入邮箱地址')
+      return
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError('请输入有效的邮箱地址')
+      return
+    }
+
+    setError('')
+    setSendingCode(true)
+
+    try {
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          purpose: 'register',
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setError(data.error || '发送验证码失败')
+        return
+      }
+
+      setCodeSent(true)
+      setCountdown(60) // 60秒倒计时
+
+      // 开始倒计时
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer)
+            return 0
+          }
+          return prev - 1
+        })
+      }, 1000)
+
+      // 开发环境显示验证码（生产环境删除）
+      if (data.code) {
+        console.log('验证码:', data.code)
+      }
+    } catch (err) {
+      setError('网络错误，请稍后重试')
+    } finally {
+      setSendingCode(false)
+    }
+  }
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!formData.verificationCode) {
+      setError('请输入验证码')
+      return
+    }
 
     if (formData.password !== formData.confirmPassword) {
       setError('两次输入的密码不一致')
@@ -53,6 +117,7 @@ export default function RegisterPage() {
           email: formData.email,
           username: formData.username,
           password: formData.password,
+          verificationCode: formData.verificationCode,
         }),
       })
 
@@ -63,14 +128,7 @@ export default function RegisterPage() {
         return
       }
 
-      // 如果需要邮箱验证
-      if (data.requiresVerification) {
-        setRegisteredEmail(formData.email)
-        setSuccess(true)
-        return
-      }
-
-      // 注册成功后，刷新全局用户状态
+      // 注册成功后，刷新全局用户状态并跳转
       await refreshUser()
       router.push('/dashboard')
       router.refresh()
@@ -89,68 +147,56 @@ export default function RegisterPage() {
           <p className="text-gray-600">开始您的健康管理之旅</p>
         </div>
 
-        {success ? (
-          <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 text-center">
-              <div className="text-4xl mb-3">📧</div>
-              <h3 className="text-lg font-semibold text-blue-900 mb-2">
-                注册成功！请验证您的邮箱
-              </h3>
-              <p className="text-blue-700 mb-4">
-                我们已向 <strong>{registeredEmail}</strong> 发送了验证邮件。
-              </p>
-              <div className="bg-white rounded p-4 mb-4">
-                <p className="text-sm text-gray-700 mb-2">📝 <strong>下一步：</strong></p>
-                <ol className="text-sm text-gray-600 text-left space-y-1 list-decimal list-inside">
-                  <li>检查您的邮箱收件箱</li>
-                  <li>找到来自健康计算器的邮件</li>
-                  <li>点击邮件中的验证按钮</li>
-                  <li>验证成功后即可登录</li>
-                </ol>
-              </div>
-              <p className="text-xs text-blue-600">
-                💡 验证链接将在 24 小时后失效
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                没收到邮件？请检查垃圾邮件文件夹
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <Button
-                onClick={() => router.push('/login')}
-                className="w-full"
-              >
-                前往登录
-              </Button>
-              
-              <div className="text-center">
-                <Link
-                  href="/"
-                  className="text-sm text-gray-500 hover:text-gray-700"
-                >
-                  ← 返回首页
-                </Link>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
             </div>
           )}
 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              邮箱地址
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                name="email"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="your@email.com"
+                value={formData.email}
+                onChange={handleChange}
+                autoComplete="email"
+                required
+              />
+              <Button
+                type="button"
+                onClick={handleSendCode}
+                disabled={sendingCode || countdown > 0}
+                variant="secondary"
+                className="whitespace-nowrap"
+              >
+                {sendingCode ? '发送中...' : countdown > 0 ? `${countdown}秒` : codeSent ? '重新发送' : '发送验证码'}
+              </Button>
+            </div>
+          </div>
+
+          {codeSent && (
+            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
+              📧 验证码已发送到您的邮箱，请查收（有效期10分钟）
+            </div>
+          )}
+
           <Input
-            type="email"
-            name="email"
-            label="邮箱地址"
-            placeholder="your@email.com"
-            value={formData.email}
+            type="text"
+            name="verificationCode"
+            label="验证码"
+            placeholder="请输入6位验证码"
+            value={formData.verificationCode}
             onChange={handleChange}
-            autoComplete="email"
+            maxLength={6}
             required
+            disabled={!codeSent}
           />
 
           <Input
@@ -186,32 +232,26 @@ export default function RegisterPage() {
             required
           />
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? '注册中...' : '注册'}
-            </Button>
-          </form>
-        )}
+          <Button type="submit" className="w-full" disabled={loading || !codeSent}>
+            {loading ? '注册中...' : '注册'}
+          </Button>
+        </form>
 
-        {!success && (
-          <>
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
-                已有账户？{' '}
-                <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-                  立即登录
-                </Link>
-              </p>
-            </div>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            已有账户？{' '}
+            <Link href="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+              立即登录
+            </Link>
+          </p>
+        </div>
 
-            <div className="mt-4 text-center">
-              <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
-                ← 返回首页
-              </Link>
-            </div>
-          </>
-        )}
+        <div className="mt-4 text-center">
+          <Link href="/" className="text-sm text-gray-500 hover:text-gray-700">
+            ← 返回首页
+          </Link>
+        </div>
       </Card>
     </div>
   )
 }
-
