@@ -28,6 +28,7 @@ yarn-error.log*
 EDGEONE_ENV_READY.txt
 EDGEONE_ENV_FINAL.txt
 SUPABASE_PROJECT_INFO.md
+NEON_MIGRATION_CONFIG.txt
 
 # vercel
 .vercel
