@@ -23,8 +23,42 @@ const UserContext = createContext<UserContextType | undefined>(undefined)
 let userCache: { user: User | null; timestamp: number } | null = null
 const CACHE_DURATION = 60000 // 1分钟缓存
 
+// localStorage 键名
+const USER_STORAGE_KEY = 'health_calculator_user'
+
+// 从 localStorage 读取用户信息
+function loadUserFromStorage(): User | null {
+  if (typeof window === 'undefined') return null
+  
+  try {
+    const stored = localStorage.getItem(USER_STORAGE_KEY)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (error) {
+    console.error('Failed to load user from localStorage:', error)
+  }
+  return null
+}
+
+// 保存用户信息到 localStorage
+function saveUserToStorage(user: User | null) {
+  if (typeof window === 'undefined') return
+  
+  try {
+    if (user) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user))
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY)
+    }
+  } catch (error) {
+    console.error('Failed to save user to localStorage:', error)
+  }
+}
+
 export function UserProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  // 初始化时从 localStorage 读取用户信息，避免闪烁
+  const [user, setUser] = useState<User | null>(() => loadUserFromStorage())
   const [loading, setLoading] = useState(true)
   const isRefreshing = useRef(false) // 防止并发请求
 
@@ -36,7 +70,9 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // 检查缓存
     if (userCache && Date.now() - userCache.timestamp < CACHE_DURATION) {
-      setUser(userCache.user)
+      const cachedUser = userCache.user
+      setUser(cachedUser)
+      saveUserToStorage(cachedUser) // 同步到 localStorage
       setLoading(false)
       return
     }
@@ -48,16 +84,21 @@ export function UserProvider({ children }: { children: ReactNode }) {
       })
       if (response.ok) {
         const data = await response.json()
-        setUser(data.user)
+        const fetchedUser = data.user
+        setUser(fetchedUser)
         // 更新缓存
-        userCache = { user: data.user, timestamp: Date.now() }
+        userCache = { user: fetchedUser, timestamp: Date.now() }
+        // 保存到 localStorage
+        saveUserToStorage(fetchedUser)
       } else if (response.status === 401) {
         setUser(null)
         userCache = { user: null, timestamp: Date.now() }
+        saveUserToStorage(null)
       }
     } catch (error) {
-      setUser(null)
-      userCache = { user: null, timestamp: Date.now() }
+      // 出错时不清除 localStorage 中的用户信息，保持显示
+      // 只在明确 401 时才清除
+      console.error('Failed to refresh user:', error)
     } finally {
       setLoading(false)
       isRefreshing.current = false
@@ -68,6 +109,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     setUser(newUser)
     // 更新缓存
     userCache = { user: newUser, timestamp: Date.now() }
+    // 保存到 localStorage
+    saveUserToStorage(newUser)
   }, [])
 
   useEffect(() => {
