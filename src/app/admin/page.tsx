@@ -16,7 +16,7 @@ export default async function AdminPage() {
   }
 
   // 获取统计数据
-  const statsResponse = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/stats`, {
+  const statsResponse = await fetch('/api/admin/stats', {
     headers: {
       Cookie: `session=${session}`,
     },
