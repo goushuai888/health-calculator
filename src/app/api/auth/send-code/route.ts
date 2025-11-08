@@ -93,10 +93,9 @@ export async function POST(request: NextRequest) {
     // 重置密码场景：用户必须存在
     if (purpose === 'reset-password') {
       if (!user) {
-        // 安全考虑：即使用户不存在也返回成功
         return NextResponse.json(
-          { message: '如果该邮箱已注册，您将收到验证码' },
-          { status: 200 }
+          { error: '该邮箱尚未注册，请先注册账号' },
+          { status: 400 }
         )
       }
 
