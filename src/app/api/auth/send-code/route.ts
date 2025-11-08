@@ -9,6 +9,15 @@ function generateCode(): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // 检查环境变量
+    if (!process.env.RESEND_API_KEY) {
+      console.error('RESEND_API_KEY 环境变量未配置')
+      return NextResponse.json(
+        { error: '邮件服务未配置，请联系管理员' },
+        { status: 500 }
+      )
+    }
+
     const { email, purpose } = await request.json()
 
     if (!email || !purpose) {
@@ -60,9 +69,12 @@ export async function POST(request: NextRequest) {
       })
 
       if (!emailResult.success) {
-        console.error('发送验证码失败:', emailResult.error)
+        console.error('发送验证码失败 (注册):', emailResult.error)
         return NextResponse.json(
-          { error: '发送验证码失败，请稍后重试' },
+          { 
+            error: '发送验证码失败，请检查邮件服务配置',
+            details: process.env.NODE_ENV === 'development' ? String(emailResult.error) : undefined
+          },
           { status: 500 }
         )
       }
@@ -118,9 +130,12 @@ export async function POST(request: NextRequest) {
       })
 
       if (!emailResult.success) {
-        console.error('发送验证码失败:', emailResult.error)
+        console.error('发送验证码失败 (重置密码):', emailResult.error)
         return NextResponse.json(
-          { error: '发送验证码失败，请稍后重试' },
+          { 
+            error: '发送验证码失败，请检查邮件服务配置',
+            details: process.env.NODE_ENV === 'development' ? String(emailResult.error) : undefined
+          },
           { status: 500 }
         )
       }
@@ -138,7 +153,10 @@ export async function POST(request: NextRequest) {
   } catch (error: any) {
     console.error('Send code error:', error)
     return NextResponse.json(
-      { error: '服务器错误，请稍后重试' },
+      { 
+        error: '服务器错误，请稍后重试',
+        details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      },
       { status: 500 }
     )
   }
